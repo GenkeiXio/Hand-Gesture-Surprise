@@ -1,0 +1,140 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: radial-gradient(ellipse at center, #0a0e27 0%, #000000 100%);
+  touch-action: manipulation;
+}
+
+body {
+  position: relative;
+}
+
+#particleCanvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Hand-gesture layer additions */
+#webcamVideo {
+  position: fixed;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  right: max(12px, env(safe-area-inset-right));
+  width: min(180px, 30vw);
+  height: min(135px, 22vw);
+  min-width: 110px;
+  min-height: 82px;
+  border-radius: 12px;
+  object-fit: cover;
+  transform: scaleX(-1) translateY(22px) scale(0.96);
+  opacity: 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  transition: opacity 0.4s ease, transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+#webcamVideo.visible {
+  opacity: 0.9;
+  transform: scaleX(-1) translateY(0) scale(1);
+}
+
+#statusBadge {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top));
+  left: max(12px, env(safe-area-inset-left));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(10, 14, 39, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: clamp(11px, 1.8vw, 13px);
+  color: #cfd3f0;
+  z-index: 10;
+  transition: background 0.3s ease;
+  max-width: calc(100vw - 24px);
+}
+
+#statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6a72c9;
+  box-shadow: 0 0 8px #6a72c9;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+  #webcamVideo {
+    width: 150px;
+    height: 112px;
+    right: 14px;
+    bottom: 18px;
+    border-radius: 10px;
+  }
+
+  #statusBadge {
+    top: 14px;
+    left: 14px;
+    max-width: calc(100vw - 28px);
+  }
+}
+
+@media (max-width: 480px) {
+  #webcamVideo {
+    width: 130px;
+    height: 96px;
+    border-radius: 10px;
+  }
+
+  #statusBadge {
+    padding: 7px 10px;
+    gap: 6px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 768px) {
+  #statusBadge {
+    backdrop-filter: blur(4px);
+  }
+}
+
+#statusBadge.closed #statusDot {
+  background: #ff6b9d;
+  box-shadow: 0 0 10px #ff6b9d;
+}
+
+#statusBadge.open #statusDot {
+  background: #6ad7c9;
+  box-shadow: 0 0 8px #6ad7c9;
+}
+
+#statusBadge.slow #statusDot {
+  background: #f4c95d;
+  box-shadow: 0 0 10px #f4c95d;
+}
+
+#statusBadge.paused #statusDot {
+  background: #ffa94d;
+  box-shadow: 0 0 10px #ffa94d;
+}
+
+#statusBadge.reverse #statusDot {
+  background: #ff5e7a;
+  box-shadow: 0 0 12px #ff5e7a;
+}
