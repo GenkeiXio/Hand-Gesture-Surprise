@@ -7,12 +7,17 @@
 
 const canvas = document.getElementById('particleCanvas');
 const ctx = canvas.getContext('2d');
+const IS_MOBILE = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.matchMedia('(max-width: 768px)').matches;
 
 let width, height, centerX, centerY;
 
 function resize() {
-  width = canvas.width = window.innerWidth;
-  height = canvas.height = window.innerHeight;
+  const dpr = Math.min(window.devicePixelRatio || 1, IS_MOBILE ? 1.5 : 2);
+  width = window.innerWidth;
+  height = window.innerHeight;
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   centerX = width / 2;
   centerY = height / 2;
 }
@@ -20,13 +25,12 @@ window.addEventListener('resize', resize);
 resize();
 
 // ---- Config ----
-const IS_MOBILE = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.matchMedia('(max-width: 768px)').matches;
-const PARTICLE_COUNT = IS_MOBILE ? 500 : 900;
-const ROTATION_SPEED = IS_MOBILE ? 0.0007 : 0.0009;      // radians per frame, base speed
-const DEPTH = IS_MOBILE ? 1000 : 1200;                 // max z depth
+const PARTICLE_COUNT = IS_MOBILE ? 380 : 900;
+const ROTATION_SPEED = IS_MOBILE ? 0.00055 : 0.0009;      // radians per frame, base speed
+const DEPTH = IS_MOBILE ? 900 : 1200;                 // max z depth
 const FOCAL_LENGTH = 400;           // projection focal length
 const GALAXY_ARMS = 3;              // spiral arm count
-const GALAXY_TWIST = IS_MOBILE ? 4.1 : 4.5;           // how tightly arms spiral
+const GALAXY_TWIST = IS_MOBILE ? 4.0 : 4.5;           // how tightly arms spiral
 const MAX_RADIUS = Math.min(window.innerWidth, window.innerHeight) * 0.55;
 
 // Morph config
@@ -467,26 +471,28 @@ async function startHandTracking() {
   setStatus('none', 'Show your hand — fist = heart');
 
   let lastVideoTime = -1;
+  let lastGestureCheck = 0;
+  const GESTURE_INTERVAL = IS_MOBILE ? 60 : 30;
 
-  function detectFrame() {
+  function detectFrame(nowMs) {
     if (videoEl.readyState >= 2 && videoEl.currentTime !== lastVideoTime) {
-      lastVideoTime = videoEl.currentTime;
-      const nowMs = performance.now();
-      try {
-        const results = handLandmarker.detectForVideo(videoEl, nowMs);
-        handleGestureFrame(results.landmarks);
-      } catch (err) {
-        console.error('Detection error:', err);
+      if (nowMs - lastGestureCheck >= GESTURE_INTERVAL) {
+        lastGestureCheck = nowMs;
+        lastVideoTime = videoEl.currentTime;
+
+        try {
+          const results = handLandmarker.detectForVideo(videoEl, nowMs);
+          handleGestureFrame(results.landmarks);
+        } catch (err) {
+          console.error('Detection error:', err);
+        }
       }
     }
 
-    if (IS_MOBILE && Math.random() < 0.35) {
-      return requestAnimationFrame(detectFrame);
-    }
     requestAnimationFrame(detectFrame);
   }
 
-  detectFrame();
+  requestAnimationFrame(detectFrame);
 }
 
 startHandTracking().catch((err) => {
